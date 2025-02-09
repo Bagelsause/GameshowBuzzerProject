@@ -1,45 +1,76 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { db, serverTimestamp } from './firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { db, auth, serverTimestamp } from "./firebase";
+import { collection, doc, setDoc } from "firebase/firestore";
+import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import { v4 as uuidv4 } from "uuid";
 
 const JoinPage = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [color, setColor] = useState('#ff0000'); // default color
+  const [name, setName] = useState("");
+  const [color, setColor] = useState("#ff0000"); // default color
+  const [loading, setLoading] = useState(true);
+
+  // Ensure the user is signed in anonymously when the component mounts.
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // Sign in anonymously if no user exists.
+        signInAnonymously(auth)
+          .then(() => {
+            setLoading(false);
+          })
+          .catch((error) => {
+            console.error("Anonymous sign-in failed:", error);
+            setLoading(false);
+          });
+      } else {
+        setLoading(false);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate the name input
+    // Validate the name (must be 1-30 characters)
     if (!name || name.length > 30) {
       alert("Please enter a name with 1-30 characters.");
       return;
     }
 
-    // Generate a unique ID for the player
+    // Ensure that authentication is complete.
+    if (!auth.currentUser) {
+      alert("Authentication not ready. Please wait.");
+      return;
+    }
+
+    // Generate a unique ID for the player document.
     const playerId = uuidv4();
 
-    // Create a player document in a "players" collection
     try {
-      // Alternatively, you can use collection(db, 'players') with setDoc
-      await setDoc(doc(db, 'players', playerId), {
+      await setDoc(doc(db, "players", playerId), {
         name,
         color,
-        pressed: false, // Flag for button press (you can modify as needed)
+        pressed: false,          // Initial flag for button press.
         createdAt: serverTimestamp(),
+        owner: auth.currentUser.uid,  // Tie the document to the authenticated user.
       });
 
-      // Redirect to the player button page (assume route like /button/:playerId)
+      // Redirect the player to the button page.
       navigate(`/button/${playerId}`);
     } catch (error) {
       console.error("Error adding player: ", error);
     }
   };
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div style={{ padding: '2rem' }}>
+    <div style={{ padding: "2rem" }}>
       <h1>Join the Game</h1>
       <form onSubmit={handleSubmit}>
         <div>

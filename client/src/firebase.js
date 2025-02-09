@@ -1,7 +1,8 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, serverTimestamp } from 'firebase/firestore';
+import { initializeApp } from "firebase/app";
+import { getFirestore, serverTimestamp } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-// Replace these with your own Firebase project config values
+//replace with actual config values
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_AUTH_DOMAIN",
@@ -13,5 +14,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-export { db, serverTimestamp };
+export { db, auth, serverTimestamp };
