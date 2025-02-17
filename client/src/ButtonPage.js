@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  serverTimestamp,
+  deleteDoc,
+} from "firebase/firestore";
 import { db } from "./firebase";
 
 const ButtonPage = () => {
@@ -30,20 +36,34 @@ const ButtonPage = () => {
     fetchPlayer();
   }, [playerId]);
 
-  // Handle the button press by updating the document.
+  // Handle the button press by updating the document and resetting after 2 seconds.
   const handleButtonPress = async () => {
     if (buttonPressed) return; // Prevent multiple presses.
 
     setButtonPressed(true);
     try {
       const playerDocRef = doc(db, "players", playerId);
+      // Update the document: mark the button as pressed and set pressedAt if not already set.
       await updateDoc(playerDocRef, {
         pressed: true,
-        pressedAt: serverTimestamp(),
+        // Set pressedAt only if it isn’t already set.
+        pressedAt: player?.pressedAt ? player.pressedAt : serverTimestamp(),
       });
+      
+      // After 2 seconds, reset the pressed flag (keeping pressedAt intact)
+      setTimeout(async () => {
+        try {
+          await updateDoc(playerDocRef, {
+            pressed: false,
+          });
+          setButtonPressed(false);
+        } catch (resetError) {
+          console.error("Error resetting button state:", resetError);
+          setButtonPressed(false);
+        }
+      }, 2000);
     } catch (error) {
       console.error("Error updating player document:", error);
-      // In case of error, allow the user to try pressing again.
       setButtonPressed(false);
     }
   };
