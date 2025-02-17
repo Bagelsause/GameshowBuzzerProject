@@ -2,7 +2,6 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, serverTimestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-//replace with actual config values
 const firebaseConfig = {
   apiKey: "AIzaSyCxrdj_LhDCC7WXnVcKNRoHCjw46fXt4j8",
   authDomain: "cottongigglegames.firebaseapp.com",
