@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 
-// Utility to convert an index to an ordinal string.
+
+//defining how long until the "next round starts" (will automatically set the next user as "first" once it resets) [in milliseconds]
+const PRESS_EVENT_EXPIRY = 60000; //60 seconds
+
+//utility to convert an index to an ordinal string.
 const getOrdinal = (n) => {
   if (n === 0) return "first";
   if (n === 1) return "second";
@@ -10,16 +14,22 @@ const getOrdinal = (n) => {
   return `${n + 1}th`;
 };
 
-// Define how long a press event should remain visible (in milliseconds)
-const PRESS_EVENT_EXPIRY = 60000; // 60 seconds
+//utility to get an inverse color of the player's background (to set as readable text)
+const getReadableColor = (hexColor) => {
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "#000000" : "#FFFFFF";
+};
 
 const BrowserSourcePage = () => {
-  // Record the time when this browser source session loads.
+  //record the time when this browser source session loads (for invalidating old game documents)
   const [loadTime] = useState(new Date());
   const [players, setPlayers] = useState([]);
 
   useEffect(() => {
-    // Subscribe to all player documents.
+    //subscribe to all player documents
     const unsubscribe = onSnapshot(collection(db, "players"), (snapshot) => {
       const playersData = [];
       snapshot.forEach((doc) => {
@@ -32,15 +42,19 @@ const BrowserSourcePage = () => {
 
   const now = new Date();
 
-  // Filter for players who joined after the browser source loaded.
+  //filter for players who joined after the browser source loaded
   const filteredPlayers = players.filter((player) => {
-    if (!player.createdAt) return false; // Ignore if no createdAt timestamp.
-    // Convert the Firestore Timestamp to a JavaScript Date.
+    if (!player.createdAt) return false; //ignore if no createdAt timestamp
+    //convert the Firestore Timestamp to a JavaScript Date
     const createdAtDate = player.createdAt.toDate();
     return createdAtDate > loadTime;
   });
+  //sorting players by createdAt date, just so no players randomly shuffle around
+  const sortedPlayers = filteredPlayers.sort(
+    (a, b) => a.createdAt.toDate() - b.createdAt.toDate()
+  );
 
-  // For the precedence list, we still base things on the pressedAt timestamp.
+  //for the precedence list, we still base things on the pressedAt timestamp
   const pressEvents = filteredPlayers
     .filter((player) => {
       if (!player.pressedAt) return false;
@@ -57,7 +71,7 @@ const BrowserSourcePage = () => {
         height: "100vh",
         position: "relative",
         overflow: "hidden",
-        pointerEvents: "none", // Overlay is non-interactive in OBS.
+        pointerEvents: "none", //overlay is non-interactive in OBS (as expected)
       }}
     >
       {/* Precedence List: Display press order in a fixed box at top-left */}
@@ -83,7 +97,7 @@ const BrowserSourcePage = () => {
                 textAlign: "center",
                 fontSize: "1rem",
                 color: "#fff",
-                height: "40px", // Uniform height for each entry.
+                height: "40px", //uniform height for each entry.
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -112,11 +126,11 @@ const BrowserSourcePage = () => {
           padding: "20px",
         }}
       >
-        {filteredPlayers.map((player) => (
+        {sortedPlayers.map((player) => (
           <div
             key={player.id}
             style={{
-              width: "150px",
+              width: "calc(25% - 20px)",
               height: "150px",
               backgroundColor: player.color,
               display: "flex",
@@ -130,7 +144,12 @@ const BrowserSourcePage = () => {
               transition: "all 0.2s ease",
             }}
           >
-            <span style={{ color: "#fff", fontSize: "1.2rem" }}>
+            <span
+              style={{
+                color: getReadableColor(player.color),
+                fontSize: "calc(1rem + 1vw)",
+              }}
+            >
               {player.name}
             </span>
           </div>
