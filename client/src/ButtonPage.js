@@ -14,7 +14,7 @@ const ButtonPage = () => {
   const [buttonPressed, setButtonPressed] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch the player's document on component mount.
+  //fetch the player's document on component mount.
   useEffect(() => {
     const fetchPlayer = async () => {
       try {
@@ -35,21 +35,21 @@ const ButtonPage = () => {
     fetchPlayer();
   }, [playerId]);
 
-  // Handle the button press by updating the document and resetting after 2 seconds.
+  //handle the button press by updating the document and resetting after 2 seconds.
   const handleButtonPress = async () => {
-    if (buttonPressed) return; // Prevent multiple presses.
+    if (buttonPressed) return; //prevent multiple presses (debouncing from user-side)
 
     setButtonPressed(true);
     try {
       const playerDocRef = doc(db, "players", playerId);
-      // Update the document: mark the button as pressed and set pressedAt if not already set.
+      //update the document: mark the button as pressed and set pressedAt if not already set.
       await updateDoc(playerDocRef, {
         pressed: true,
-        // Set pressedAt only if it isn’t already set.
+        //set pressedAt only if it isn’t already set.
         pressedAt: player?.pressedAt ? player.pressedAt : serverTimestamp(),
       });
       
-      // After 2 seconds, reset the pressed flag (keeping pressedAt intact)
+      //after 2 seconds, reset the pressed flag (keeping pressedAt intact)
       setTimeout(async () => {
         try {
           await updateDoc(playerDocRef, {

@@ -11,17 +11,17 @@ const JoinPage = () => {
   const [color, setColor] = useState("#ff0000"); // default color
   const [loading, setLoading] = useState(true);
 
-  // Ensure the user is signed in anonymously when the component mounts.
+  //ensure the user is signed in anonymously when the component mounts.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
-        // Sign in anonymously if no user exists.
+        //sign in anonymously if no user exists.
         signInAnonymously(auth)
           .then(() => {
             setLoading(false);
           })
           .catch((error) => {
-            console.error("Anonymous sign-in failed:", error);
+            console.error("Anonymous sign-in failed:", error, ". Report this error to @Bagelsause.");
             setLoading(false);
           });
       } else {
@@ -34,31 +34,31 @@ const JoinPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate the name (must be 1-30 characters)
+    //name validation (must be 1-30 characters)
     if (!name || name.length > 30) {
       alert("Please enter a name with 1-30 characters.");
       return;
     }
 
-    // Ensure that authentication is complete.
+    //ensure that authentication is complete.
     if (!auth.currentUser) {
-      alert("Authentication not ready. Please wait.");
+      alert("Authentication not ready. Please wait. If this issue persists, message @Bagelsause.");
       return;
     }
 
-    // Generate a unique ID for the player document.
+    //generate a unique ID for the player document (to prevent player spoofing)
     const playerId = uuidv4();
 
     try {
       await setDoc(doc(db, "players", playerId), {
         name,
         color,
-        pressed: false,          // Initial flag for button press.
+        pressed: false,          //initial flag for button press, set to false cuz duh
         createdAt: serverTimestamp(),
-        owner: auth.currentUser.uid,  // Tie the document to the authenticated user.
+        owner: auth.currentUser.uid,  //tie the document to the authenticated user
       });
 
-      // Redirect the player to the button page.
+      //redirect the player to their button page
       navigate(`/button/${playerId}`);
     } catch (error) {
       console.error("Error adding player: ", error);
