@@ -10,11 +10,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path={`/GiggleGames/`} element={<JoinPage />} />
-        <Route path={`/GiggleGames/button/:playerId`} element={<ButtonPage />} />
-        <Route path={`/GiggleGames/browsersource`} element={<BrowserSourcePage />} />
-        <Route path={`/GiggleGames/presslist`} element={<PrecedenceList />} />
-        <Route path={`/GiggleGames/admin`} element={<AdminPage />} />
+        <Route path="/" element={<JoinPage />} />
+        <Route path="/button/:playerId" element={<ButtonPage />} />
+        <Route path="/browsersource" element={<BrowserSourcePage />} />
+        <Route path="/presslist" element={<PrecedenceList />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </Router>
   );
