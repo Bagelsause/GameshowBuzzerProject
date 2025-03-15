@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -16,23 +16,19 @@ const BrowserSourcePage = () => {
   const [loadTime] = useState(new Date());
   const [players, setPlayers] = useState([]);
   const [audioBuffer, setAudioBuffer] = useState(null);
-
-  //audio context on component mount
-  const audioContext = useMemo(() => new (
-    window.AudioContext || window.webkitAudioContext
-  )(), []);
+  const prevPlayersRef = useRef([]);
 
   //fully preload the audio file on component mount
   useEffect(() => {
     const preloadAudio = async () => {
       const audioData = await fetch("/buzzer.mp3")
         .then((res) => res.arrayBuffer())
-        .then((data) => audioContext.decodeAudioData(data));
+        .then((data) => new (window.AudioContext || window.webkitAudioContext)().decodeAudioData(data));
       setAudioBuffer(audioData);
     };
 
     preloadAudio();
-  }, [audioContext]);
+  }, []);
 
   useEffect(() => {
     //subscribe to all player documents
@@ -60,27 +56,31 @@ const BrowserSourcePage = () => {
 
   //whenever a player presses their button, play the buzzer sound
   useEffect(() => {
-    const playBuzzer = (pitch) => {
+    const playBuzzer = () => {
       if (audioBuffer) {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioContext.createBufferSource();
         source.buffer = audioBuffer;
 
         const gainNode = audioContext.createGain();
         gainNode.gain.value = 1; //set volume to max (can be adjusted in OBS manually)
 
-        source.playbackRate.value = pitch; //apply pitch shift
         source.connect(gainNode);
         gainNode.connect(audioContext.destination);
         source.start(0);
       }
     };
 
-    players.forEach((player) => {
-      if (player.pressed) {
-        playBuzzer(player.pitch);
+    sortedPlayers.forEach((player) => {
+      const prevPlayer = prevPlayersRef.current.find(p => p.id === player.id);
+      if (player.pressed && (!prevPlayer || !prevPlayer.pressed)) {
+        playBuzzer();
       }
     });
-  }, [players, audioBuffer, audioContext]);
+
+    //update the previous players reference
+    prevPlayersRef.current = sortedPlayers;
+  }, [sortedPlayers, audioBuffer]);
 
   return (
     <div

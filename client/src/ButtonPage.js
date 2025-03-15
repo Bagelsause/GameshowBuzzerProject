@@ -37,19 +37,8 @@ const ButtonPage = () => {
         const playerDocRef = doc(db, "players", playerId);
         const playerDocSnap = await getDoc(playerDocRef);
         if (playerDocSnap.exists()) {
-          //if player doesn't have pitch value, generate a random pitch for them
-          const playerData = playerDocSnap.data();
-          if (!playerData.pitch) {
-            const newPitch = Math.random() * 0.5 + 0.75; //random pitch 0.75x - 1.25x
-            await updateDoc(playerDocRef, { pitch: newPitch });
-
-            //since new pitch was created, set updated fields in the player state
-            setPlayer({ id: playerDocSnap.id, ...playerDocSnap.data(), pitch: newPitch });
-          }
-          else{
-            //use old pitch and info
-            setPlayer({ id: playerDocSnap.id, ...playerDocSnap.data()});
-          }
+          //use old info
+          setPlayer({ id: playerDocSnap.id, ...playerDocSnap.data()});
 
           //preload the audio buffer
           const audioData = await fetch("/buzzer.mp3")
@@ -75,10 +64,8 @@ const ButtonPage = () => {
       source.buffer = audioBuffer;
 
       const gainNode = audioContext.createGain();
-      console.log(Math.min(Math.max(volume, 0), 1));
       gainNode.gain.value = Math.min(Math.max(volume, 0), 1); //apply user-set volume
 
-      source.playbackRate.value = player.pitch; //apply pitch shift
       source.connect(gainNode);
       gainNode.connect(audioContext.destination);
       source.start(0);
