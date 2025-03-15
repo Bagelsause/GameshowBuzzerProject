@@ -1,4 +1,6 @@
-# GameshowBuzzerProject
+# GiggleGames
+
+This was a commission from someone regarding a custom browser source for a self-sustainable stream idea.
 
 Just as a TLDR for my decisions in this project:
 - We are using Firestore for storing all user information, as we want to limit frontend processing as much as possible
