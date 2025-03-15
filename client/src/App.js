@@ -7,16 +7,14 @@ import PrecedenceList from "./PrecedenceList";
 import AdminPage from "./AdminPage";
 
 function App() {
-  const urlprefix = "/GiggleGames";
-
   return (
     <Router>
       <Routes>
-        <Route path={`${urlprefix}/`} element={<JoinPage />} />
-        <Route path={`${urlprefix}/button/:playerId`} element={<ButtonPage />} />
-        <Route path={`${urlprefix}/browsersource`} element={<BrowserSourcePage />} />
-        <Route path={`${urlprefix}/presslist`} element={<PrecedenceList />} />
-        <Route path={`${urlprefix}/admin`} element={<AdminPage />} />
+        <Route path={`/GiggleGames/`} element={<JoinPage />} />
+        <Route path={`/GiggleGames/button/:playerId`} element={<ButtonPage />} />
+        <Route path={`/GiggleGames/browsersource`} element={<BrowserSourcePage />} />
+        <Route path={`/GiggleGames/presslist`} element={<PrecedenceList />} />
+        <Route path={`/GiggleGames/admin`} element={<AdminPage />} />
       </Routes>
     </Router>
   );
