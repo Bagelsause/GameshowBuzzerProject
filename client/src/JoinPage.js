@@ -63,7 +63,7 @@ const JoinPage = () => {
       });
 
       //redirect the player to their button page
-      navigate(`/GiggleGames/button/${playerId}`);
+      navigate(`/button/${playerId}`);
     } catch (error) {
       console.error("Error adding player: ", error);
     }
