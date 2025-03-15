@@ -45,7 +45,7 @@ const ButtonPage = () => {
           setPlayer({ id: playerDocSnap.id, ...playerDocSnap.data()});
 
           //preload the audio buffer
-          const audioData = await fetch("/buzzer.mp3")
+          const audioData = await fetch("/GiggleGames/buzzer.mp3")
             .then((res) => res.arrayBuffer())
             .then((data) => audioContext.decodeAudioData(data));
           setAudioBuffer(audioData);

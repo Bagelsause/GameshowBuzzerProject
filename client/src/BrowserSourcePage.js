@@ -21,7 +21,7 @@ const BrowserSourcePage = () => {
   //fully preload the audio file on component mount
   useEffect(() => {
     const preloadAudio = async () => {
-      const audioData = await fetch("/buzzer.mp3")
+      const audioData = await fetch("/GiggleGames/buzzer.mp3")
         .then((res) => res.arrayBuffer())
         .then((data) => new (window.AudioContext || window.webkitAudioContext)().decodeAudioData(data));
       setAudioBuffer(audioData);
