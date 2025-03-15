@@ -7,13 +7,13 @@ const AdminPage = () => {
       <h1>Admin Page</h1>
       <ul>
         <li>
-          <Link to="/">Give to Players</Link>
+          <Link to="/GiggleGames/">Give to Players</Link>
         </li>
         <li>
-          <Link to="/presslist">Press Order List</Link>
+          <Link to="/GiggleGames/presslist">Press Order List</Link>
         </li>
         <li>
-          <Link to="/browsersource">Browser Source ONLY</Link>
+          <Link to="/GiggleGames/browsersource">Browser Source ONLY</Link>
         </li>
       </ul>
     </div>
