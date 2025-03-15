@@ -2,18 +2,6 @@ import React, { useState, useEffect } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 
-
-//defining how long until the "next round starts" (will automatically set the next user as "first" once it resets) [in milliseconds]
-const PRESS_EVENT_EXPIRY = 60000; //60 seconds
-
-//utility to convert an index to an ordinal string.
-const getOrdinal = (n) => {
-  if (n === 0) return "first";
-  if (n === 1) return "second";
-  if (n === 2) return "third";
-  return `${n + 1}th`;
-};
-
 //utility to get an inverse color of the player's background (to set as readable text)
 const getReadableColor = (hexColor) => {
   const r = parseInt(hexColor.slice(1, 3), 16);
@@ -40,8 +28,6 @@ const BrowserSourcePage = () => {
     return () => unsubscribe();
   }, []);
 
-  const now = new Date();
-
   //filter for players who joined after the browser source loaded
   const filteredPlayers = players.filter((player) => {
     if (!player.createdAt) return false; //ignore if no createdAt timestamp
@@ -54,15 +40,6 @@ const BrowserSourcePage = () => {
     (a, b) => a.createdAt.toDate() - b.createdAt.toDate()
   );
 
-  //for the precedence list, we still base things on the pressedAt timestamp
-  const pressEvents = filteredPlayers
-    .filter((player) => {
-      if (!player.pressedAt) return false;
-      const pressedTime = player.pressedAt.toDate();
-      return now - pressedTime < PRESS_EVENT_EXPIRY;
-    })
-    .sort((a, b) => a.pressedAt.toDate() - b.pressedAt.toDate());
-
   return (
     <div
       style={{
@@ -74,45 +51,6 @@ const BrowserSourcePage = () => {
         pointerEvents: "none", //overlay is non-interactive in OBS (as expected)
       }}
     >
-      {/* Precedence List: Display press order in a fixed box at top-left */}
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "20px",
-          backgroundColor: "rgba(0, 0, 0, 0.7)",
-          padding: "10px",
-          borderRadius: "8px",
-          width: "250px",
-        }}
-      >
-        {pressEvents.length > 0 ? (
-          pressEvents.map((player, index) => (
-            <div
-              key={player.id}
-              style={{
-                border: "1px solid #fff",
-                padding: "5px",
-                marginBottom: "5px",
-                textAlign: "center",
-                fontSize: "1rem",
-                color: "#fff",
-                height: "40px", //uniform height for each entry.
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {player.name} pressed {getOrdinal(index)}
-            </div>
-          ))
-        ) : (
-          <div style={{ color: "#fff", textAlign: "center" }}>
-            No recent presses.
-          </div>
-        )}
-      </div>
-
       {/* Main Area: Visualize all players' buttons */}
       <div
         style={{
