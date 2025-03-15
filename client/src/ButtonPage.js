@@ -25,6 +25,10 @@ const ButtonPage = () => {
   const [volume, setVolume] = useState(0.5);
   const [audioBuffer, setAudioBuffer] = useState(null);
 
+  useEffect(() => {
+    document.title = "Player Button";
+  }, []);
+
   //create some form of audio context on component mount
   const audioContext = useMemo(() => new (
     window.AudioContext|| window.webkitAudioContext

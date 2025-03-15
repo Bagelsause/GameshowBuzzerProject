@@ -11,6 +11,10 @@ const JoinPage = () => {
   const [color, setColor] = useState("#ff0000"); // default color
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    document.title = "Join the Game";
+  }, []);
+
   //ensure the user is signed in anonymously when the component mounts.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
