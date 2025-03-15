@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -15,6 +15,24 @@ const BrowserSourcePage = () => {
   //record the time when this browser source session loads (for invalidating old game documents)
   const [loadTime] = useState(new Date());
   const [players, setPlayers] = useState([]);
+  const [audioBuffer, setAudioBuffer] = useState(null);
+
+  //audio context on component mount
+  const audioContext = useMemo(() => new (
+    window.AudioContext || window.webkitAudioContext
+  )(), []);
+
+  //fully preload the audio file on component mount
+  useEffect(() => {
+    const preloadAudio = async () => {
+      const audioData = await fetch("/buzzer.mp3")
+        .then((res) => res.arrayBuffer())
+        .then((data) => audioContext.decodeAudioData(data));
+      setAudioBuffer(audioData);
+    };
+
+    preloadAudio();
+  }, [audioContext]);
 
   useEffect(() => {
     //subscribe to all player documents
@@ -39,6 +57,30 @@ const BrowserSourcePage = () => {
   const sortedPlayers = filteredPlayers.sort(
     (a, b) => a.createdAt.toDate() - b.createdAt.toDate()
   );
+
+  //whenever a player presses their button, play the buzzer sound
+  useEffect(() => {
+    const playBuzzer = (pitch) => {
+      if (audioBuffer) {
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 1; //set volume to max (can be adjusted in OBS manually)
+
+        source.playbackRate.value = pitch; //apply pitch shift
+        source.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        source.start(0);
+      }
+    };
+
+    players.forEach((player) => {
+      if (player.pressed) {
+        playBuzzer(player.pitch);
+      }
+    });
+  }, [players, audioBuffer, audioContext]);
 
   return (
     <div

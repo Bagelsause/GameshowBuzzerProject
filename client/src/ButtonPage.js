@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import {
   doc,
@@ -22,6 +22,13 @@ const ButtonPage = () => {
   const [player, setPlayer] = useState(null);
   const [buttonPressed, setButtonPressed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [volume, setVolume] = useState(0.5);
+  const [audioBuffer, setAudioBuffer] = useState(null);
+
+  //create some form of audio context on component mount
+  const audioContext = useMemo(() => new (
+    window.AudioContext|| window.webkitAudioContext
+  )(), []);
 
   //fetch the player's document on component mount.
   useEffect(() => {
@@ -30,7 +37,25 @@ const ButtonPage = () => {
         const playerDocRef = doc(db, "players", playerId);
         const playerDocSnap = await getDoc(playerDocRef);
         if (playerDocSnap.exists()) {
-          setPlayer(playerDocSnap.data());
+          //if player doesn't have pitch value, generate a random pitch for them
+          const playerData = playerDocSnap.data();
+          if (!playerData.pitch) {
+            const newPitch = Math.random() * 0.5 + 0.75; //random pitch 0.75x - 1.25x
+            await updateDoc(playerDocRef, { pitch: newPitch });
+
+            //since new pitch was created, set updated fields in the player state
+            setPlayer({ id: playerDocSnap.id, ...playerDocSnap.data(), pitch: newPitch });
+          }
+          else{
+            //use old pitch and info
+            setPlayer({ id: playerDocSnap.id, ...playerDocSnap.data()});
+          }
+
+          //preload the audio buffer
+          const audioData = await fetch("/buzzer.mp3")
+            .then((res) => res.arrayBuffer())
+            .then((data) => audioContext.decodeAudioData(data));
+          setAudioBuffer(audioData);
         } else {
           console.error("Player not found");
         }
@@ -42,13 +67,30 @@ const ButtonPage = () => {
     };
 
     fetchPlayer();
-  }, [playerId]);
+  }, [playerId, audioContext]);
+
+  const playBuzzer = async () => {
+    if (audioBuffer) {
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+
+      const gainNode = audioContext.createGain();
+      console.log(Math.min(Math.max(volume, 0), 1));
+      gainNode.gain.value = Math.min(Math.max(volume, 0), 1); //apply user-set volume
+
+      source.playbackRate.value = player.pitch; //apply pitch shift
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      source.start(0);
+    }
+  };
 
   //handle the button press by updating the document and resetting after 2 seconds.
   const handleButtonPress = async () => {
     if (buttonPressed) return; //prevent multiple presses (debouncing from user-side)
 
     setButtonPressed(true);
+    playBuzzer();
     try {
       const playerDocRef = doc(db, "players", playerId);
       //update the document: mark the button as pressed and set pressedAt if not already set.
@@ -102,6 +144,19 @@ const ButtonPage = () => {
       >
         {buttonPressed ? "Button Pressed!" : "Press Button"}
       </button>
+      <br/>
+      <label>
+        Volume:
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          defaultValue="0.5"
+          value={volume}
+          onChange={(e) => setVolume(parseFloat(e.target.value))}
+        />
+      </label>
     </div>
   );
 };
