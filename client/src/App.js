@@ -12,7 +12,7 @@ function App() {
         <Route path="/" element={<JoinPage />} />
         <Route path="/button/:playerId" element={<ButtonPage />} />
         <Route path="/browsersource" element={<BrowserSourcePage />} />
-        <Route path="/precedenceList" element={<PrecedenceList />} />
+        <Route path="/precedencelist" element={<PrecedenceList />} />
       </Routes>
     </Router>
   );
