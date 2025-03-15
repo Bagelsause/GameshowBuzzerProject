@@ -40,6 +40,8 @@ const PrecedenceList = () => {
     return (
         <div style={{ padding: "20px", maxWidth: "400px", margin: "auto" }}>
             <h2>Press order</h2>
+            <p>Don't show this on stream, this should be strictly behind-the-scenes!</p>
+            <br/>
             {pressEvents.length > 0 ? (
                 <ul style={{ listStyle: "none", padding: 0 }}>
                     {pressEvents.map((player, index) => (
@@ -70,7 +72,7 @@ const PrecedenceList = () => {
                     cursor: "pointer",
                 }}
             >
-                Start New Round
+                Start New Round (wipe all presses)
             </button>
         </div>
     );

@@ -114,8 +114,10 @@ const ButtonPage = () => {
   }
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div style={{ padding: "2rem", textAlign: "center" }}>
       <h1>Welcome, {player.name}!</h1>
+      <p>Press the button when you want to answer!</p>
+      <p>As a reminder, do NOT show this page on stream!</p>
       <button
         onClick={handleButtonPress}
         disabled={buttonPressed}
@@ -127,12 +129,13 @@ const ButtonPage = () => {
           border: "none",
           borderRadius: "8px",
           cursor: buttonPressed ? "not-allowed" : "pointer",
+          margin: "1rem 0",
         }}
       >
         {buttonPressed ? "Button Pressed!" : "Press Button"}
       </button>
       <br/>
-      <label>
+      <label style={{ display: "block", margin: "1rem 0" }}>
         Volume:
         <input
           type="range"
@@ -142,6 +145,7 @@ const ButtonPage = () => {
           defaultValue="0.5"
           value={volume}
           onChange={(e) => setVolume(parseFloat(e.target.value))}
+          style={{ marginLeft: "1rem" }}
         />
       </label>
     </div>

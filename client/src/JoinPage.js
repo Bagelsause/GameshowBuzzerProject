@@ -70,10 +70,13 @@ const JoinPage = () => {
   }
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div style={{ padding: "2rem", textAlign: "center" }}>
       <h1>Join the Game</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
+      <p>Enter your name and choose your color to join!!</p>
+      <p>Do NOT show this page on stream!</p>
+      <br/>
+      <form onSubmit={handleSubmit} style={{ display: "inline-block", textAlign: "left" }}>
+        <div style={{ marginBottom: "1rem" }}>
           <label>
             Name:
             <input
@@ -83,20 +86,22 @@ const JoinPage = () => {
               maxLength={30}
               placeholder="Enter your name"
               required
+              style={{ marginLeft: "1rem", padding: "0.5rem", fontSize: "1rem" }}
             />
           </label>
         </div>
-        <div>
+        <div style={{ marginBottom: "1rem" }}>
           <label>
             Choose a color:
             <input
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
+              style={{ marginLeft: "1rem", fontSize: "1rem" }}
             />
           </label>
         </div>
-        <button type="submit">Join</button>
+        <button type="submit" style={{ padding: "0.5rem 1rem", fontSize: "1rem", cursor: "pointer" }}>Join</button>
       </form>
     </div>
   );
